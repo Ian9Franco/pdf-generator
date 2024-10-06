@@ -1,101 +1,130 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Header } from './components/Header'
+import { Sidebar } from './components/Sidebar'
+import { InfoModal } from './components/InfoModal'
+import { MainContent } from './components/MainContent'
+import { PDFDocument } from './types'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  // State variables
+  const [darkMode, setDarkMode] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
+  const [markdown, setMarkdown] = useState('')
+  const [title, setTitle] = useState('Untitled Document')
+  const [documents, setDocuments] = useState<PDFDocument[]>([])
+  const [currentDocument, setCurrentDocument] = useState<PDFDocument | null>(null)
+  const [fontSettings, setFontSettings] = useState({
+    titleSize: 24,
+    subtitleSize: 20,
+    subsubtitleSize: 16,
+    normalTextSize: 12,
+    selectedFont: 'Roboto',
+    titleColor: '#000000',
+    subtitleColor: '#000000',
+    subsubtitleColor: '#000000',
+    twoColumnLayout: false,
+  })
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Load saved data from localStorage on component mount
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode')
+    if (savedDarkMode) {
+      setDarkMode(JSON.parse(savedDarkMode))
+    }
+
+    const savedDocuments = localStorage.getItem('documents')
+    if (savedDocuments) {
+      setDocuments(JSON.parse(savedDocuments))
+    }
+
+    const savedFontSettings = localStorage.getItem('fontSettings')
+    if (savedFontSettings) {
+      setFontSettings(JSON.parse(savedFontSettings))
+    }
+  }, [])
+
+  // Save darkMode, documents, and fontSettings to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode))
+  }, [darkMode])
+
+  useEffect(() => {
+    localStorage.setItem('documents', JSON.stringify(documents))
+  }, [documents])
+
+  useEffect(() => {
+    localStorage.setItem('fontSettings', JSON.stringify(fontSettings))
+  }, [fontSettings])
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+  }
+
+  // Toggle sidebar visibility
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar)
+  }
+
+  // Clear current content
+  const clearContent = () => {
+    setMarkdown('')
+    setTitle('Untitled Document')
+    setCurrentDocument(null)
+  }
+
+  // Load a document
+  const loadDocument = (doc: PDFDocument) => {
+    setTitle(doc.title)
+    setMarkdown(doc.content)
+    setCurrentDocument(doc)
+  }
+
+  // Delete a document
+  const deleteDocument = (id: string) => {
+    setDocuments(documents.filter(doc => doc.id !== id))
+    if (currentDocument && currentDocument.id === id) {
+      clearContent()
+    }
+  }
+
+  return (
+    <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
+      <div className="flex flex-col min-h-screen bg-background text-foreground">
+        <Header
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
+          toggleSidebar={toggleSidebar}
+          clearContent={clearContent}
+          setShowInfo={setShowInfo}
+          fontSettings={fontSettings}
+          setFontSettings={setFontSettings}
+        />
+        <div className="flex-1 flex">
+          <Sidebar
+            show={showSidebar}
+            documents={documents}
+            onLoadDocument={loadDocument}
+            onDeleteDocument={deleteDocument}
+          />
+          <MainContent
+            markdown={markdown}
+            setMarkdown={setMarkdown}
+            title={title}
+            setTitle={setTitle}
+            documents={documents}
+            setDocuments={setDocuments}
+            setCurrentDocument={setCurrentDocument}
+            darkMode={darkMode}
+            fontSettings={fontSettings}
+            setFontSettings={setFontSettings}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
+      </div>
     </div>
-  );
+  )
 }

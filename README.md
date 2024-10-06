@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Markdown to PDF Converter
+
+This project is a web application that allows users to convert Markdown content to PDF files. It provides a user-friendly interface for writing Markdown, previewing the formatted content, and generating downloadable PDF documents.
+
+## Features
+
+- Real-time Markdown preview
+- PDF generation from Markdown content
+- Document management (create, edit, delete)
+- Responsive design for mobile and desktop
+- Dark mode support
+- Sidebar for easy document navigation
+
+## Technologies Used
+
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
+- pdfmake (for PDF generation)
+- react-markdown (for Markdown rendering)
 
 ## Getting Started
 
-First, run the development server:
+To run this project locally, follow these steps:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/markdown-to-pdf-converter.git
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Navigate to the project directory:
+   ```
+   cd markdown-to-pdf-converter
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Install dependencies:
+   ```
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server:
+   ```
+   npm run dev
+   ```
 
-## Learn More
+5. Open your browser and visit `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create a new document or select an existing one from the sidebar.
+2. Write your Markdown content in the left panel.
+3. Preview the formatted content in real-time on the right panel.
+4. Click the "Generate PDF" button to create a PDF from your Markdown.
+5. Once generated, use the "Download PDF" button to save the file to your device.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
+
+## Credits
+
+Developed by [Ian Pontorno](https://ian9franco.github.io/Portfolio/)
