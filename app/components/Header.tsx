@@ -48,10 +48,9 @@ export function Header({
   }, []);
 
   const handleFontSettingChange = (key: keyof HeaderProps['fontSettings'], value: number | string | boolean) => {
-    setF
-
-ontSettings(prev => ({ ...prev, [key]: value }));
+    setFontSettings(prev => ({ ...prev, [key]: value }));
   };
+  
 
   return (
     <header className={`relative flex items-center justify-between px-4 py-2 ${darkMode ? 'bg-gray-800' : 'bg-accent'} text-accent-foreground`}>

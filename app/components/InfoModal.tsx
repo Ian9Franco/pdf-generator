@@ -59,8 +59,9 @@ export function InfoModal({ onClose }: InfoModalProps) {
             <li>1. Elemento de lista numerada</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            Para comenzar, simplemente escribe tu Markdown en el editor, ajusta la configuración según sea necesario y haz clic en "Generar PDF" para crear tu documento.
-          </p>
+          Para comenzar, simplemente escribe tu Markdown en el editor, ajusta la configuración según sea necesario y haz clic en &quot;Generar PDF&quot; para crear tu documento.
+            </p>
+
         </div>
       </div>
     </div>
