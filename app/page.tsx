@@ -110,18 +110,19 @@ export default function Home() {
             onLoadDocument={loadDocument}
             onDeleteDocument={deleteDocument}
           />
-          <MainContent
-            markdown={markdown}
-            setMarkdown={setMarkdown}
-            title={title}
-            setTitle={setTitle}
-            documents={documents}
-            setDocuments={setDocuments}
-            setCurrentDocument={setCurrentDocument}
-            darkMode={darkMode}
-            fontSettings={fontSettings}
-            setFontSettings={setFontSettings}
-          />
+        <MainContent
+          {...{
+            markdown,
+            setMarkdown,
+            title,
+            setTitle,
+            documents,
+            setDocuments,
+            setCurrentDocument,
+            darkMode,
+            fontSettings,
+          }}
+        />
         </div>
         {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
       </div>
