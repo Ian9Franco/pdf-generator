@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
-import { PDFDocument } from '../types'
+import { PDFDocument, PDFContent, PDFDocDefinition } from '../types'
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import htmlToPdfmake from 'html-to-pdfmake'
-import { TDocumentDefinitions } from 'pdfmake/interfaces'
+import { adjustContentForSinglePage } from '../utils/pdfUtils'
+import { availableFonts } from '../fonts'
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
-interface ExtendedTDocumentDefinitions extends TDocumentDefinitions {
-  columns?: number;
-}
 
 interface MainContentProps {
   markdown: string;
@@ -34,6 +31,7 @@ interface MainContentProps {
     subsubtitleColor: string;
     twoColumnLayout: boolean;
   };
+  setFontSettings: React.Dispatch<React.SetStateAction<MainContentProps['fontSettings']>>;
 }
 
 export function MainContent({
@@ -46,12 +44,15 @@ export function MainContent({
   setCurrentDocument,
   darkMode,
   fontSettings,
+  setFontSettings,
 }: MainContentProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const generatePDF = useCallback(async () => {
     setIsGenerating(true);
+    setShowPreview(true);
     try {
       // Convert Markdown to HTML
       const htmlContent = await new Promise<string>((resolve) => {
@@ -60,11 +61,11 @@ export function MainContent({
           remarkPlugins: [remarkGfm],
           rehypePlugins: [rehypeRaw],
           components: {
-            h1: ({children}) => <h1 style={{fontSize: `${fontSettings.titleSize}px`, fontWeight: 'bold', color: fontSettings.titleColor}}>{children}</h1>,
-            h2: ({children}) => <h2 style={{fontSize: `${fontSettings.subtitleSize}px`, fontWeight: 'bold', color: fontSettings.subtitleColor}}>{children}</h2>,
-            h3: ({children}) => <h3 style={{fontSize: `${fontSettings.subsubtitleSize}px`, fontWeight: 'bold', color: fontSettings.subsubtitleColor}}>{children}</h3>,
-            p: ({children}) => <p style={{fontSize: `${fontSettings.normalTextSize}px`, marginBottom: '10px'}}>{children}</p>,
-            span: ({children}) => <span>{children}</span>,
+            h1: ({children}) => <h1 style={{fontSize: `${fontSettings.titleSize}px`, fontWeight: 'bold', color: fontSettings.titleColor, fontFamily: fontSettings.selectedFont}}>{children}</h1>,
+            h2: ({children}) => <h2 style={{fontSize: `${fontSettings.subtitleSize}px`, fontWeight: 'bold', color: fontSettings.subtitleColor, fontFamily: fontSettings.selectedFont}}>{children}</h2>,
+            h3: ({children}) => <h3 style={{fontSize: `${fontSettings.subsubtitleSize}px`, fontWeight: 'bold', color: fontSettings.subsubtitleColor, fontFamily: fontSettings.selectedFont}}>{children}</h3>,
+            p: ({children}) => <p style={{fontSize: `${fontSettings.normalTextSize}px`, marginBottom: '10px', fontFamily: fontSettings.selectedFont}}>{children}</p>,
+            span: ({children}) => <span style={{fontFamily: fontSettings.selectedFont}}>{children}</span>,
           },
         });
         resolve(result as unknown as string);
@@ -82,7 +83,7 @@ export function MainContent({
         },
       });
 
-      const docDefinition: ExtendedTDocumentDefinitions = {
+      const docDefinition: PDFDocDefinition = {
         content: [
           { text: title, style: 'header' },
           { text: '\n' },
@@ -105,8 +106,21 @@ export function MainContent({
       };
 
       if (fontSettings.twoColumnLayout) {
-        docDefinition.columns = 2;
+        (docDefinition as PDFDocDefinition & { columns?: number }).columns = 2;
       }
+
+      // Adjust content to fit on a single page
+      const { content: adjustedContent, titleSize, subtitleSize, subsubtitleSize, normalTextSize } = 
+        adjustContentForSinglePage(docDefinition.content as PDFContent, docDefinition);
+
+      docDefinition.content = adjustedContent;
+      setFontSettings(prev => ({
+        ...prev,
+        titleSize,
+        subtitleSize,
+        subsubtitleSize,
+        normalTextSize
+      }));
 
       const pdfDocGenerator = pdfMake.createPdf(docDefinition);
       pdfDocGenerator.getBlob((blob) => {
@@ -118,15 +132,7 @@ export function MainContent({
       console.error('Error generating PDF:', error);
       setIsGenerating(false);
     }
-  }, [markdown, title, fontSettings]);
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [pdfUrl]);
+  }, [markdown, title, fontSettings, setFontSettings]);
 
   const saveDocument = useCallback(() => {
     const newDoc: PDFDocument = { id: Date.now().toString(), title, content: markdown };
@@ -145,9 +151,15 @@ export function MainContent({
     }
   }, [pdfUrl, title]);
 
+  useEffect(() => {
+    generatePDF();
+  }, [generatePDF]);
+
+  const selectedFontVariable = availableFonts.find(font => font.name === fontSettings.selectedFont)?.variable || '--font-open-sans';
+
   return (
-    <main className="flex-1 flex overflow-hidden">
-      <div className="w-1/2 p-4 flex flex-col">
+    <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className="w-full md:w-1/2 p-4 flex flex-col">
         <input
           type="text"
           value={title}
@@ -164,8 +176,9 @@ export function MainContent({
             darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'
           }`}
           placeholder="Escribe tu Markdown aquí..."
+          style={{ fontFamily: `var(${selectedFontVariable})` }}
         />
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4 flex flex-wrap justify-between gap-2">
           <button
             onClick={saveDocument}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
@@ -178,17 +191,22 @@ export function MainContent({
           >
             Generar PDF
           </button>
-          {pdfUrl && (
-            <button
-              onClick={downloadPDF}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            >
-              Descargar PDF
-            </button>
-          )}
+          <button
+            onClick={downloadPDF}
+            disabled={!pdfUrl}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Descargar PDF
+          </button>
+          <button
+            onClick={() => setShowPreview(!showPreview)}
+            className="md:hidden px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors"
+          >
+            {showPreview ? 'Ocultar Vista Previa' : 'Mostrar Vista Previa'}
+          </button>
         </div>
       </div>
-      <div className={`w-1/2 p-4 overflow-auto ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+      <div className={`w-full md:w-1/2 p-4 overflow-auto ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} ${showPreview ? '' : 'hidden md:block'} border-2 border-primary shadow-lg rounded-lg`}>
         {isGenerating ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-xl font-semibold">Generando PDF...</p>
@@ -201,10 +219,10 @@ export function MainContent({
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={{
-                h1: ({children}) => <h1 style={{fontSize: `${fontSettings.titleSize}px`, fontWeight: 'bold', color: fontSettings.titleColor}}>{children}</h1>,
-                h2: ({children}) => <h2 style={{fontSize: `${fontSettings.subtitleSize}px`, fontWeight: 'bold', color: fontSettings.subtitleColor}}>{children}</h2>,
-                h3: ({children}) => <h3 style={{fontSize: `${fontSettings.subsubtitleSize}px`, fontWeight: 'bold', color: fontSettings.subsubtitleColor}}>{children}</h3>,
-                p: ({children}) => <p style={{fontSize: `${fontSettings.normalTextSize}px`, marginBottom: '10px'}}>{children}</p>,
+                h1: ({children}) => <h1 style={{fontSize: `${fontSettings.titleSize}px`, fontWeight: 'bold', color: fontSettings.titleColor, fontFamily: `var(${selectedFontVariable})`}}>{children}</h1>,
+                h2: ({children}) => <h2 style={{fontSize: `${fontSettings.subtitleSize}px`, fontWeight: 'bold', color: fontSettings.subtitleColor, fontFamily: `var(${selectedFontVariable})`}}>{children}</h2>,
+                h3: ({children}) => <h3 style={{fontSize: `${fontSettings.subsubtitleSize}px`, fontWeight: 'bold', color: fontSettings.subsubtitleColor, fontFamily: `var(${selectedFontVariable})`}}>{children}</h3>,
+                p: ({children}) => <p style={{fontSize: `${fontSettings.normalTextSize}px`, marginBottom: '10px', fontFamily: `var(${selectedFontVariable})`}}>{children}</p>,
               }}
             >
               {markdown}

@@ -22,8 +22,8 @@ export function InfoModal({ onClose }: InfoModalProps) {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-background text-foreground rounded-lg p-6 w-full max-w-md relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div ref={modalRef} className="bg-background text-foreground rounded-lg p-6 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors"
@@ -31,6 +31,7 @@ export function InfoModal({ onClose }: InfoModalProps) {
         >
           <X className="h-6 w-6" />
         </button>
+        
         <h2 className="text-2xl font-bold mb-4">Acerca de Markdown a PDF</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Convierte tus documentos Markdown a PDFs con formato hermoso y fácilmente.

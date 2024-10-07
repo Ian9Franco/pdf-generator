@@ -8,7 +8,6 @@ import { MainContent } from './components/MainContent'
 import { PDFDocument } from './types'
 
 export default function Home() {
-  // State variables
   const [darkMode, setDarkMode] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
@@ -28,7 +27,6 @@ export default function Home() {
     twoColumnLayout: false,
   })
 
-  // Load saved data from localStorage on component mount
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode')
     if (savedDarkMode) {
@@ -46,7 +44,6 @@ export default function Home() {
     }
   }, [])
 
-  // Save darkMode, documents, and fontSettings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
   }, [darkMode])
@@ -59,31 +56,27 @@ export default function Home() {
     localStorage.setItem('fontSettings', JSON.stringify(fontSettings))
   }, [fontSettings])
 
-  // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
   }
 
-  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setShowSidebar(!showSidebar)
   }
 
-  // Clear current content
   const clearContent = () => {
     setMarkdown('')
     setTitle('Untitled Document')
     setCurrentDocument(null)
   }
 
-  // Load a document
   const loadDocument = (doc: PDFDocument) => {
     setTitle(doc.title)
     setMarkdown(doc.content)
     setCurrentDocument(doc)
+    setShowSidebar(false)
   }
 
-  // Delete a document
   const deleteDocument = (id: string) => {
     setDocuments(documents.filter(doc => doc.id !== id))
     if (currentDocument && currentDocument.id === id) {
@@ -91,7 +84,7 @@ export default function Home() {
     }
   }
 
-  return (
+return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Header
@@ -110,19 +103,18 @@ export default function Home() {
             onLoadDocument={loadDocument}
             onDeleteDocument={deleteDocument}
           />
-        <MainContent
-          {...{
-            markdown,
-            setMarkdown,
-            title,
-            setTitle,
-            documents,
-            setDocuments,
-            setCurrentDocument,
-            darkMode,
-            fontSettings,
-          }}
-        />
+          <MainContent
+            markdown={markdown}
+            setMarkdown={setMarkdown}
+            title={title}
+            setTitle={setTitle}
+            documents={documents}
+            setDocuments={setDocuments}
+            setCurrentDocument={setCurrentDocument}
+            darkMode={darkMode}
+            fontSettings={fontSettings}
+            setFontSettings={setFontSettings}
+          />
         </div>
         {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
       </div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { availableFonts } from '../fonts'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 
 interface FontSettingsProps {
   titleSize: number;
@@ -20,6 +21,7 @@ interface FontSettingsProps {
   onSubtitleColorChange: (color: string) => void;
   onSubsubtitleColorChange: (color: string) => void;
   onTwoColumnLayoutChange: (enabled: boolean) => void;
+  onClose: () => void;
 }
 
 export function FontSettings({
@@ -40,11 +42,17 @@ export function FontSettings({
   onTitleColorChange,
   onSubtitleColorChange,
   onSubsubtitleColorChange,
-  onTwoColumnLayoutChange
+  onTwoColumnLayoutChange,
+  onClose,
 }: FontSettingsProps) {
   return (
     <div className="p-4 space-y-4">
-      <h3 className="text-lg font-semibold text-primary mb-4">Configuración de Fuente</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-primary">Configuración de Fuente</h3>
+        <button onClick={onClose} className="text-primary hover:text-primary/80 transition-colors">
+          Cerrar
+        </button>
+      </div>
       <div>
         <label htmlFor="titleSize" className="block text-sm font-medium text-primary mb-1">Tamaño de Título (#)</label>
         <input
@@ -117,16 +125,18 @@ export function FontSettings({
       </div>
       <div>
         <label htmlFor="fontSelect" className="block text-sm font-medium text-primary mb-1">Fuente</label>
-        <select
-          id="fontSelect"
-          value={selectedFont}
-          onChange={(e) => onFontChange(e.target.value)}
-          className="w-full px-3 py-2 text-primary bg-background border border-accent rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          {availableFonts.map((font) => (
-            <option key={font.variable} value={font.variable}>{font.name}</option>
-          ))}
-        </select>
+        <Select value={selectedFont} onValueChange={onFontChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Selecciona una fuente" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableFonts.map((font) => (
+              <SelectItem key={font.name} value={font.name}>
+                <span style={{ fontFamily: `var(${font.variable})` }}>{font.name}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex items-center">
         <input

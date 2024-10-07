@@ -32,6 +32,7 @@ export function Header({
   setFontSettings
 }: HeaderProps) {
   const [showFontSettings, setShowFontSettings] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const fontSettingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,17 +51,16 @@ export function Header({
   const handleFontSettingChange = (key: keyof HeaderProps['fontSettings'], value: number | string | boolean) => {
     setFontSettings(prev => ({ ...prev, [key]: value }));
   };
-  
 
   return (
-    <header className={`relative flex items-center justify-between px-4 py-2 ${darkMode ? 'bg-gray-800' : 'bg-accent'} text-accent-foreground`}>
+    <header className={`relative flex items-center justify-between px-4 py-2 ${darkMode ? 'bg-gray-900' : 'bg-gray-200'} text-accent-foreground`}>
       <div className="flex items-center">
         <button onClick={toggleSidebar} className="mr-4 text-primary hover:text-primary/80 transition-colors">
           <Menu size={24} />
         </button>
         <h1 className="text-xl font-bold text-primary">Markdown a PDF</h1>
       </div>
-      <nav className="flex items-center space-x-4">
+      <nav className="hidden md:flex items-center space-x-4">
         <button
           onClick={clearContent}
           className="flex items-center px-3 py-2 text-sm font-medium text-primary bg-background/50 rounded-md hover:bg-background/80 transition-colors"
@@ -110,11 +110,58 @@ export function Header({
                 onSubtitleColorChange={(color) => handleFontSettingChange('subtitleColor', color)}
                 onSubsubtitleColorChange={(color) => handleFontSettingChange('subsubtitleColor', color)}
                 onTwoColumnLayoutChange={(enabled) => handleFontSettingChange('twoColumnLayout', enabled)}
+                onClose={() => setShowFontSettings(false)}
               />
             </div>
           )}
         </div>
       </nav>
+      <button
+        onClick={() => setShowMobileMenu(!showMobileMenu)}
+        className="md:hidden text-primary hover:text-primary/80 transition-colors"
+      >
+        <Menu size={24} />
+      </button>
+      {showMobileMenu && (
+        <div className="absolute top-full right-0 mt-2 w-48 bg-background border border-accent rounded-md shadow-lg z-10">
+          <button
+            onClick={() => {
+              clearContent();
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-accent/50 transition-colors"
+          >
+            Nuevo
+          </button>
+          <button
+            onClick={() => {
+              setShowInfo(true);
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-accent/50 transition-colors"
+          >
+            Información
+          </button>
+          <button
+            onClick={() => {
+              toggleDarkMode();
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-accent/50 transition-colors"
+          >
+            {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
+          </button>
+          <button
+            onClick={() => {
+              setShowFontSettings(true);
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-accent/50 transition-colors"
+          >
+            Configuración de Fuente
+          </button>
+        </div>
+      )}
     </header>
   )
 }
